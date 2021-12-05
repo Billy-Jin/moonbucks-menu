@@ -1,0 +1,1 @@
+export const $ = (selector) => document.querySelector(selector); // 외부에서 쓰려면 export 적어줘야 함
