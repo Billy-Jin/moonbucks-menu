@@ -1,0 +1,25 @@
+const $ = (selector) => document.querySelector(selector); 외우기!!
+
+
+// closest() 가장가까운 요소 가져오기
+
+//insertAdjacentHTML 기억합니다!!
+
+e.target.classList.contains("menu-edit-button") //타겟의 클래스들중에 className이 menu-edit-button인것을 가져와라
+
+
+// innerHTML, innerText 차이점 공부
+element.innerText;
+이 속성은 element 안의 text 값들만을 가져옵니다.
+
+element.innerHTML;
+innerText와는 달리 innerHTML은 element 안의 HTML이나 XML을 가져옵니다.
+
+<div id="aDiv">A<div>
+document.getElementById("aDiv").innerHTML -> <div id="aDiv">A<div>
+document.getElementById("aDiv").innerText -> A
+
+
+이벤트들 안에 들어가는 내용들은 알아보기 쉬운 이름으로 정리해서 저장해 놓으면 알아보기 더욱 쉽다.
+
+이벤트 안에 (e) 등 입력 값이 필요 없다면 굳이 함수를 쓸 필요는 없다. 
