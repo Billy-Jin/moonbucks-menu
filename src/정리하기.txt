@@ -44,3 +44,41 @@ js파일의 이름을 짓기 쉽도록 대표하는 함수 또는 변수 한개�
 상단에 this 초기화 하는것 신기함
 
 --setp3
+fetch('url', option)
+url = 주소
+option = 상세한 요구들
+
+    await fetch(`${BASE_URL}/category/${this.currentCategory}/menu`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: menuName }), // headers , body 모두 어떤 형식으로 주고 받을것인지 설정
+    })
+      .then((response) => {
+        return response.json();
+      }) // JSON형식으로 만들어줌
+      .then((data) => {
+        console.log(data);
+      }); //해당 데이터 읽음
+
+      async await 사용시
+      await을 사용할 함수에 async 매번 사용 해야함.
+      .then()을 붙이면, .then을 이어야지만 데이터를 받아서 사용할 수 있음.
+
+
+
+// 하나의 행동(함수)에 fetch를 여러개를 넣으면 안된다.
+      //자바스크립트는 싱글스레드이나, 웹은 멀티스레드 이기 때문에 요청순서와 불러오는 순서가 다를수 있다.
+      // 즉 자바스크립트가 처리하지 못했는데, 웹에서는 이미 불러와서 데이터가 꼬일수 있다.
+      //그것을 방지하고자 async await을 사용한다.
+
+// { key : value } 넣어야 할때 key와 value가 동일하다면 한가지만 하나로 작성해도 된다. {name}
+
+
+!! 
+궁금한내용.. 웹의 isSoldOut은 어떻게 연결된건지...? 웹에서 미리 설정을 해놓은건지..? api로 만들어 놓은건가..?
+
+api > index.js    console.error(e); 왜 e 가 들어갔는지? MenuApi에는 없는데 호출 함수의 e가 들어가는지? 
+
+

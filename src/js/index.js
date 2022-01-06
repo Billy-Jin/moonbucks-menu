@@ -1,37 +1,36 @@
-// 회고
-// - '상태값'의 중요성
-// - 스텝1하고 스텝2하는데 상태 값을 사용해서 사용자 관점에서
-//   페이지 렌더링 될 때 어떻게 렌더링 되는지 처음 제대로 보게 됨
-// -
-
-// TODO localStorage Read & Write
-// - [x] localStorage에 데이터를 저장한다.
-// - [x] 메뉴를 추가 할 때 저장
-// - [x] 메뉴를 수정 할 때 저장
-// - [x] 메뉴를 삭제 할 때 저장
-// - [x] localStorage에 있는 데이터를 읽어온다.
-
-// - TODO 카테고리별 메뉴판 관리
-// - [x] 에스프레소 메뉴판 관리
-// - [x] 프라푸치노  메뉴판 관리
-// - [x] 블렌디드 메뉴판 관리
-// - [x] 티바나 메뉴판 관리
-// - [x] 디저트  메뉴판 관리
-
-// - TODO 페이지 접근시 최초 데이터 Read & Rendering
-// - [x] 페이지에 최초로 로딩될때 localStorage에 에스프레소 메뉴를 읽어온다.
-// - [x] 에스프레소 메뉴를 페이지에 그려준다.
-
-// - TODO 품질 상태 관리
-// - [x] 품절 상태인 경우를 보여줄 수 있게, 품절 버튼을 추가하고 sold-out class를 추가하여 상태를 변경한다
-// - [x] 품절 버튼을 추가한다
-// - [x] 품절 버튼을 클릭하면 localStorage에 상태값이 전달된다.
-// - [x] 클릭이벤트에서 가장 가까운 li 태그의 class속성 값에 sold-out을 추가한다.
 import { $ } from "./utils/dom.js";
-import store from "./store/index.js";
+import MenuApi from "./api/index.js";
+
+// TODO 서버 요청 부분
+// - [x] 웹 서버를 띄운다.
+// - [x] 서버에 새로운 메뉴명이 추가될 수 있도록 요청한다.
+// - [x] 서버에 카테고리별 메뉴명를 불러온다.
+// - [x] 서버에 메뉴가 수정될수 있도록 요청한다.
+// - [x] 서버에 메뉴의 품절상태가 토글될 수 있도록 요청한다.
+// - [x] 서버에 메뉴가 삭제 될 수 있도록 요청한다.
+
+// TODO 리펙터링 부분
+// - [x] localStorage에 저장하는 로직은 지운다.
+// - [x] fetch 비동기 api를 사용하는 부분을 astnc await을 사용하여 구현한다.
+
+// TODO 사용자 경험
+// - [x] API 통신이 실패하는 경우에 대해 사용자가 알 수 있게 alert로 예외처리를 진행한다.
+// - [x] 중복되는 메뉴는 추가할 수 없다.
+
+// 오늘의 회고
+// 1. 웹서버 띄우는 법
+// 2. BASE_URL 웹 서버 변수 먼저 선언
+// 3. 비동기 처리하는데 해당하는 부분이 어디인지 확인하고, 웹서버에 요청하게끔 코드 짜기
+// 4. 서버에 요청한 후 데이터를 받아서 화면에 렌더링 하기
+// 5. 리팩터링
+// - localStorage 부분 지우기
+// - API파일 따로 만들어서 진행
+// - 페이지 렌더링과 관련해서 중복되는 부분들 제거,
+// - 서버 요청 할 때 option 객체
+// - 카테고리 버튼 클릭시 콜백함수 분리
+// 6. 사용자 경험 부분
 
 function App() {
-  // 상태는 변하는 데이터, 이앱에서 변하는 것이 무엇인가 - 메뉴명
   this.menu = {
     espresso: [],
     frappuccino: [],
@@ -40,19 +39,26 @@ function App() {
     desert: [],
   };
   this.currentCategory = "espresso";
-  this.init = () => {
-    if (store.getLocalStorage()) {
-      this.menu = store.getLocalStorage();
-    }
+
+  this.init = async () => {
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     render();
     initEventListeners();
   };
 
-  const render = () => {
+  const render = async () => {
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     const template = this.menu[this.currentCategory]
-      .map((item, index) => {
-        return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
-  <span class="w-100 pl-2 menu-name  ${item.soldOut ? "sold-out" : ""}">${
+      .map((item) => {
+        // console.log(item);
+        return `<li data-menu-id="${
+          item.id
+        }" class="menu-list-item d-flex items-center py-2">
+  <span class="w-100 pl-2 menu-name  ${item.isSoldOut ? "sold-out" : ""}">${
           item.name
         }</span>
   <button
@@ -83,45 +89,58 @@ function App() {
     const menuCount = this.menu[this.currentCategory].length;
     $(".menu-count").innerText = `총 ${menuCount} 개`;
   };
-  const addMenuName = () => {
+  const addMenuName = async () => {
     if ($("#menu-name").value.trim() === "") {
       alert("값을 입력해주세요.");
       return;
     }
+    const duplicatedItem = this.menu[this.currentCategory].find(
+      (menuItem) => menuItem.name === $("#menu-name").value
+    );
+    if (duplicatedItem) {
+      alert("이미 등록된 메뉴입니다. 다시 입력해주세요.");
+      $("#menu-name").value = "";
+      return;
+    }
 
     const menuName = $("#menu-name").value;
-    this.menu[this.currentCategory].push({ name: menuName });
-    store.setLocalStorage(this.menu);
+    await MenuApi.createMenu(this.currentCategory, menuName);
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     render();
-
     $("#menu-name").value = "";
   };
-  const updateMenuName = (e) => {
+  const updateMenuName = async (e) => {
     const menuId = e.target.closest("li").dataset.menuId; //menu-id => menuId로 사용
     const $menuName = e.target.closest("li").querySelector(".menu-name");
     const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
     if (updatedMenuName) {
-      this.menu[this.currentCategory][menuId].name = updatedMenuName;
-      store.setLocalStorage(this.menu);
+      await MenuApi.updateMenu(this.currentCategory, updatedMenuName, menuId);
       render();
     }
   };
-  const removeMenuName = (e) => {
+  const removeMenuName = async (e) => {
     if (confirm("정말 삭제하시겠습니까?")) {
       const menuId = e.target.closest("li").dataset.menuId;
-      this.menu[this.currentCategory].splice(menuId, 1); //splice(어디서, 몇개) 삭제할때 사용
-      store.setLocalStorage(this.menu);
+      await MenuApi.deleteMenu(this.currentCategory, menuId);
       render();
     }
   };
-  const soldOutMenu = (e) => {
+  const soldOutMenu = async (e) => {
     const menuId = e.target.closest("li").dataset.menuId;
-    this.menu[this.currentCategory][menuId].soldOut =
-      !this.menu[this.currentCategory][menuId].soldOut;
-    store.setLocalStorage(this.menu);
+    await MenuApi.toggleSoldOutMenu(this.currentCategory, menuId);
     render();
   };
-
+  const changeCategory = (e) => {
+    const isCategoryButton = e.target.classList.contains("cafe-category-name");
+    if (isCategoryButton) {
+      const categoryName = e.target.dataset.categoryName;
+      this.currentCategory = categoryName;
+      $("#category-title").innerText = `${e.target.innerText} 메뉴관리`;
+      render();
+    }
+  };
   const initEventListeners = () => {
     $("#menu-list").addEventListener("click", (e) => {
       if (e.target.classList.contains("menu-edit-button")) {
@@ -151,16 +170,7 @@ function App() {
       }
       addMenuName();
     });
-    $("nav").addEventListener("click", (e) => {
-      const isCategoryButton =
-        e.target.classList.contains("cafe-category-name");
-      if (isCategoryButton) {
-        const categoryName = e.target.dataset.categoryName;
-        this.currentCategory = categoryName;
-        $("#category-title").innerText = `${e.target.innerText} 메뉴관리`;
-        render();
-      }
-    });
+    $("nav").addEventListener("click", changeCategory);
   };
 }
 
