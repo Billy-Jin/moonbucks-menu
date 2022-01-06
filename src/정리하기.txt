@@ -20,6 +20,27 @@ document.getElementById("aDiv").innerHTML -> <div id="aDiv">A<div>
 document.getElementById("aDiv").innerText -> A
 
 
+--step2
+
 이벤트들 안에 들어가는 내용들은 알아보기 쉬운 이름으로 정리해서 저장해 놓으면 알아보기 더욱 쉽다.
 
 이벤트 안에 (e) 등 입력 값이 필요 없다면 굳이 함수를 쓸 필요는 없다. 
+
+
+
+JSON형식으로 저장할때
+JSON.stringify(변수명);
+
+JSON형식에서 문자열로 불러올때
+JSON.parse(변수명);
+
+함수에서 return 안해주면 불러오기만 하고 함수밖으로 내보내지는 못함
+
+if문 마지막에는 return을 넣는 습관을 해야 다른 조건문이 불필요하게 실행 안됨
+
+js파일의 이름을 짓기 쉽도록 대표하는 함수 또는 변수 한개씩으로 각각 분리한다.
+
+초기화 하려면 new 함수명 을 입력해줘야 한다는것.
+상단에 this 초기화 하는것 신기함
+
+--setp3
